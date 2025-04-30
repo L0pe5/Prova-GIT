@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Questionário Interativo - Git</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 90%;
+      display: none;
+    }
+    .intro {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+    }
+    h1 {
+      color: #243650;
+    }
+    .question {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      box-sizing: border-box;
+    }
+    textarea {
+      height: 150px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #243650;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #f4bc1d;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="intro" id="intro">
+    <h1>Bem-vindo ao Questionário sobre Git</h1>
+    <p>Você responderá 10 questões abertas sobre os principais comandos do Git. Suas respostas serão salvas automaticamente.</p>
+    <input type="text" id="username" placeholder="Digite seu nome completo" />
+    <button onclick="startQuiz()">Começar</button>
+  </div>
+
+  <div class="container" id="quiz">
+    <h1>Questionário sobre Git</h1>
+    <div class="question" id="questionText"></div>
+    <textarea id="answer" placeholder="Digite sua resposta aqui..."></textarea>
+    <div class="buttons">
+      <button onclick="prevQuestion()">Anterior</button>
+      <button onclick="nextQuestion()">Próxima</button>
+      <button onclick="exportAnswers()">Exportar respostas (.txt)</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      "Explique o que é o Git e por que ele é uma ferramenta importante no desenvolvimento de software.",
+      "Descreva o que acontece quando o comando 'git init' é executado dentro de uma pasta.",
+      "Quais são as etapas básicas para versionar um arquivo novo utilizando o Git? Cite os comandos utilizados e sua função.",
+      "O que o comando 'git status' mostra? Por que ele é importante durante o processo de versionamento?",
+      "Descreva o que é a 'área de staging' no Git e como ela funciona.",
+      "Explique a diferença entre os comandos 'git commit' e 'git push', incluindo o que cada um faz no fluxo de trabalho.",
+      "Para que serve o comando 'git clone' e qual a estrutura básica da sua utilização?",
+      "Como o Git trata conflitos de merge? O que o desenvolvedor deve fazer quando um conflito é identificado?",
+      "Qual a utilidade do comando 'git log'? Que tipo de informações ele fornece sobre o repositório?",
+      "Explique a importância do arquivo '.gitignore' e como ele influencia no funcionamento do Git."
+    ];
+
+    let currentQuestion = 0;
+    let answers = JSON.parse(localStorage.getItem("git_answers")) || Array(questions.length).fill("");
+    let userName = localStorage.getItem("git_username") || "";
+
+    function startQuiz() {
+      userName = document.getElementById("username").value || "Anônimo";
+      localStorage.setItem("git_username", userName);
+      document.getElementById("intro").style.display = "none";
+      document.getElementById("quiz").style.display = "block";
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      document.getElementById("questionText").textContent = questions[currentQuestion];
+      document.getElementById("answer").value = answers[currentQuestion];
+    }
+
+    function saveAnswers() {
+      localStorage.setItem("git_answers", JSON.stringify(answers));
+    }
+
+    function nextQuestion() {
+      answers[currentQuestion] = document.getElementById("answer").value;
+      saveAnswers();
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        renderQuestion();
+      } else {
+        alert("Você chegou ao fim do questionário!");
+        console.log("Respostas:", answers);
+      }
+    }
+
+    function prevQuestion() {
+      answers[currentQuestion] = document.getElementById("answer").value;
+      saveAnswers();
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        renderQuestion();
+      }
+    }
+
+    function exportAnswers() {
+      answers[currentQuestion] = document.getElementById("answer").value;
+      saveAnswers();
+      let content = `Questionário sobre Git\nNome: ${userName}\n\n`;
+      questions.forEach((q, i) => {
+        content += `Pergunta ${i + 1}: ${q}\nResposta: ${answers[i] || "(sem resposta)"}\n\n`;
+      });
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `respostas_git_${userName.replace(/\s+/g, '_')}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
